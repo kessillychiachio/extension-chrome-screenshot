@@ -1,6 +1,40 @@
 chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.acao === "capturar") capturarPaginaInteira(msg.formato);
+  if (msg.acao === "capturar") capturar(msg.formato);
 });
+
+// Quando o alarme dispara, apaga o badge
+chrome.alarms.onAlarm.addListener(async (alarme) => {
+  if (alarme.name === "limpar-badge") {
+    await chrome.action.setBadgeText({ text: "" });
+  }
+});
+
+async function mostrarStatus(texto, cor) {
+  await chrome.action.setBadgeBackgroundColor({ color: cor });
+  await chrome.action.setBadgeText({ text: texto });
+}
+
+async function capturar(formato) {
+  // Trava: se já tem uma captura rodando, ignora o clique
+  const { capturando = false } = await chrome.storage.session.get("capturando");
+  if (capturando) return;
+  await chrome.storage.session.set({ capturando: true });
+
+  await chrome.alarms.clear("limpar-badge");
+  await mostrarStatus("…", "#1E6FD9");
+
+  try {
+    await capturarPaginaInteira(formato);
+    await mostrarStatus("✓", "#1E8E3E");
+  } catch (erro) {
+    console.error("Falha na captura:", erro);
+    await mostrarStatus("!", "#B06000");
+  } finally {
+    // Libera a trava e agenda a limpeza do badge (30 segundos)
+    await chrome.storage.session.set({ capturando: false });
+    await chrome.alarms.create("limpar-badge", { delayInMinutes: 0.5 });
+  }
+}
 
 async function capturarPaginaInteira(formato) {
   const [aba] = await chrome.tabs.query({ active: true, currentWindow: true });

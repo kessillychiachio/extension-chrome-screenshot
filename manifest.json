@@ -6,7 +6,8 @@
   "permissions": [
     "debugger",
     "downloads",
-    "activeTab"
+    "activeTab",
+    "alarms"
   ],
   "action": {
     "default_popup": "popup.html"
