@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Captura de Página Inteira",
+  "version": "1.0",
+  "description": "Tira print do site inteiro, de cima a baixo.",
+  "permissions": [
+    "debugger",
+    "downloads",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
